@@ -5,13 +5,7 @@ using Newtonsoft.Json;
 
 public interface ISerializable<T> where T : ISerializableData
 {
-    T Serialize();
-    void Deserialize(T data);
-}
-
-public interface IFastSer<T> where T : ISerializableData
-{
-    T SData { get; set; }
+    T SerializedData { get; set; }
 }
 
 public interface ISerializableLinksHandler
@@ -76,6 +70,7 @@ public class Serializer : MonoBehaviour
 
     void Serialize()
     {
+        // Gets all MonoBehaviours, might be slow
         var all = FindObjectsOfType<MonoBehaviour>();
         GameData game = new GameData();
 
@@ -88,7 +83,7 @@ public class Serializer : MonoBehaviour
                 SerializedGameObject sob = new SerializedGameObject();
 
                 sob.loc = new Loc(all[i].transform);
-                sob.data = sobj.Serialize();
+                sob.data = sobj.SerializedData;
 
                 game.sobs.Add(sob);
             }
@@ -116,6 +111,10 @@ public class Serializer : MonoBehaviour
 
         GameData game = JsonConvert.DeserializeObject<GameData>(str, settings);
 
+        // Save a list of links
+        List<ISerializableLinksHandler> links = new List<ISerializableLinksHandler>();
+
+        // First pass, instantiate
         foreach (var obData in game.sobs)
         {
             var prefab = prefabsDict[obData.data.prefabName];
@@ -126,9 +125,18 @@ public class Serializer : MonoBehaviour
             go.transform.localScale = obData.loc.scl;
 
             var obComp = go.GetComponent<ISerializable<ISerializableData>>();
-            obComp.Deserialize(obData.data);
+            obComp.SerializedData = obData.data;
+
+            if (obComp is ISerializableLinksHandler obCompLink)
+                links.Add(obCompLink);
 
             Debug.Log(str);
+        }
+
+        // Second pass, link
+        foreach (var obCompLink in links)
+        {
+            obCompLink.OnDeserializeHandleLinks();
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FastObject : MonoBehaviour, IFastSer<FastObject.Data>
+public class FastObject : MonoBehaviour, ISerializable<FastObject.Data>
 {
     [System.Serializable]
     public class Data : ISerializableData
@@ -13,5 +13,5 @@ public class FastObject : MonoBehaviour, IFastSer<FastObject.Data>
     }
 
     public Data _data;
-    public Data SData { get => _data; set => _data = value; }
+    public Data SerializedData { get => _data; set => _data = value; }
 }

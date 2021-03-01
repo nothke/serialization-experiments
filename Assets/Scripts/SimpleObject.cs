@@ -14,7 +14,7 @@ public class SimpleObject : MonoBehaviour, ISerializable<SimpleObject.Data>
         public int intValue;
     }
 
-    public ISerializableData data
+    public Data SerializedData
     {
         get => new Data()
         {
@@ -24,24 +24,8 @@ public class SimpleObject : MonoBehaviour, ISerializable<SimpleObject.Data>
 
         set
         {
-            var d = value as Data;
-            floatValue = d.value;
-            intValue = d.intValue;
+            floatValue = value.value;
+            intValue = value.intValue;
         }
-    }
-
-    public Data Serialize()
-    {
-        return new Data()
-        {
-            value = floatValue,
-            intValue = intValue
-        };
-    }
-
-    public void Deserialize(Data data)
-    {
-        floatValue = data.value;
-        intValue = data.intValue;
     }
 }
