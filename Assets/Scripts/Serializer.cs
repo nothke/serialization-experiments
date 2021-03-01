@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 
-public interface ISerializable<T> where T : ISerializableData
+public interface ISerializable<T> where T : class, ISerializableData
 {
     T SerializedData { get; set; }
 }
@@ -76,7 +76,13 @@ public class Serializer : MonoBehaviour
 
         for (int i = 0; i < all.Length; i++)
         {
-            if (all[i] is ISerializable<ISerializableData> sobj)
+            Debug.Log("F " + all[i].name + ", type: " + all[i].GetType());
+
+            //var test = (ISerializable<ISerializableData>)all[i];
+            //if (test != null)
+                //Debug.Log("WORKS!");
+
+            if (all[i] is ISerializable<SimpleObject.Data> sobj)
             {
                 Debug.Log("Found " + all[i].name);
 

@@ -2,16 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ComplexObject : MonoBehaviour, ISerializable<ComplexObject.Data>, ISerializablePrefabLink
+using Newtonsoft.Json;
+
+public class ComplexObject : MonoBehaviour, ISerializable<ComplexObject.Data>
 {
     public float value = 1;
-    public string prefabName => "box";
+    public SimpleObject child;
 
     public class Data : ISerializableData
     {
         public string prefabName => "complex";
         public float value;
-        public int parentedId;
+
+        //[JsonProperty(IsReference = true)]
+        //public SimpleObject.Data childId;
     }
 
     public Data SerializedData
@@ -20,8 +24,8 @@ public class ComplexObject : MonoBehaviour, ISerializable<ComplexObject.Data>, I
         {
             return new Data()
             {
-                value = this.value,
-                parentedId = gameObject.GetInstanceID()
+                value = value,
+                //childId = child ? child.SerializedData : null
             };
         }
         set
