@@ -29,4 +29,20 @@ public class SimpleObject : MonoBehaviour, ISerializable
             intValue = d.intValue;
         }
     }
+
+    public ISerializableData Serialize()
+    {
+        return new Data()
+        {
+            value = floatValue,
+            intValue = intValue
+        };
+    }
+
+    public void Deserialize(ISerializableData data)
+    {
+        var d = data as Data;
+        floatValue = d.value;
+        intValue = d.intValue;
+    }
 }

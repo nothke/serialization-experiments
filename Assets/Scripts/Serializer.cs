@@ -5,7 +5,14 @@ using Newtonsoft.Json;
 
 public interface ISerializable
 {
-    ISerializableData data { get; set; }
+    ISerializableData Serialize();
+    void Deserialize(ISerializableData data);
+}
+
+public interface ISerDat<T> where T : ISerializableData
+{
+    T Serialize();
+    void Deserialize(T data);
 }
 
 public interface ISerializableLinksHandler
@@ -82,7 +89,7 @@ public class Serializer : MonoBehaviour
                 SerializedGameObject sob = new SerializedGameObject();
 
                 sob.loc = new Loc(all[i].transform);
-                sob.data = sobj.data;
+                sob.data = sobj.Serialize();
 
                 game.sobs.Add(sob);
             }
@@ -120,7 +127,7 @@ public class Serializer : MonoBehaviour
             go.transform.localScale = obData.loc.scl;
 
             var obComp = go.GetComponent<ISerializable>();
-            obComp.data = obData.data;
+            obComp.Deserialize(obData.data);
         }
     }
 }

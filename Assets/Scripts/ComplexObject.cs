@@ -13,22 +13,19 @@ public class ComplexObject : MonoBehaviour, ISerializable, ISerializablePrefabLi
         public float value;
         public int parentedId;
     }
-
-    ISerializableData ISerializable.data
+    
+    public ISerializableData Serialize()
     {
-        get
+        return new Data()
         {
-            return new Data()
-            {
-                value = this.value,
-                parentedId = gameObject.GetInstanceID()
-            };
-        }
+            value = this.value,
+            parentedId = gameObject.GetInstanceID()
+        };
+    }
 
-        set
-        {
-            Data d = value as Data;
-            this.value = d.value;
-        }
+    public void Deserialize(ISerializableData data)
+    {
+        Data d = data as Data;
+        this.value = d.value;
     }
 }
