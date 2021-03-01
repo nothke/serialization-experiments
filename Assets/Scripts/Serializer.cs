@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 public interface ISerializable
 {
-    ISerializableData data { get; }
+    ISerializableData data { get; set; }
 }
 
 public interface ISerializableLinksHandler
@@ -25,6 +25,10 @@ public interface ISerializableData
 
 public class Serializer : MonoBehaviour
 {
+    public GameObject[] prefabs;
+    [System.NonSerialized]
+    public Dictionary<string, GameObject> prefabsDict;
+
     public struct Loc
     {
         public Vector3 pos;
@@ -55,9 +59,13 @@ public class Serializer : MonoBehaviour
 
     void Start()
     {
+        prefabsDict = new Dictionary<string, GameObject>(prefabs.Length);
+        foreach (var go in prefabs)
+            prefabsDict.Add(go.name, go);
+
         Serialize();
 
-
+        Deserialize();
     }
 
     void Serialize()
@@ -80,7 +88,13 @@ public class Serializer : MonoBehaviour
             }
         }
 
-        string str = JsonConvert.SerializeObject(game, Formatting.Indented);
+        var settings = new JsonSerializerSettings()
+        {
+            TypeNameHandling = TypeNameHandling.Auto,
+            Formatting = Formatting.Indented
+        };
+
+        string str = JsonConvert.SerializeObject(game, settings);
         Debug.Log(str);
 
         this.str = str;
@@ -88,6 +102,25 @@ public class Serializer : MonoBehaviour
 
     void Deserialize()
     {
+        var settings = new JsonSerializerSettings()
+        {
+            TypeNameHandling = TypeNameHandling.Auto,
+            Formatting = Formatting.Indented
+        };
 
+        GameData game = JsonConvert.DeserializeObject<GameData>(str, settings);
+
+        foreach (var obData in game.sobs)
+        {
+            var prefab = prefabsDict[obData.data.prefabName];
+            GameObject go = Instantiate(prefab);
+
+            go.transform.position = obData.loc.pos;
+            go.transform.eulerAngles = obData.loc.rot;
+            go.transform.localScale = obData.loc.scl;
+
+            var obComp = go.GetComponent<ISerializable>();
+            obComp.data = obData.data;
+        }
     }
 }

@@ -4,19 +4,29 @@ using UnityEngine;
 
 public class SimpleObject : MonoBehaviour, ISerializable
 {
-    public float value;
+    public float floatValue;
     public int intValue;
 
     public class Data : ISerializableData
     {
-        public string prefabName => "simple_object";
+        public string prefabName => "simple";
         public float value;
         public int intValue;
     }
 
-    public ISerializableData data => new Data()
+    public ISerializableData data
     {
-        value = value,
-        intValue = intValue
-    };
+        get => new Data()
+        {
+            value = floatValue,
+            intValue = intValue
+        };
+
+        set
+        {
+            var d = value as Data;
+            floatValue = d.value;
+            intValue = d.intValue;
+        }
+    }
 }

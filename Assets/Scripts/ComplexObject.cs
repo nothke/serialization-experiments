@@ -9,14 +9,26 @@ public class ComplexObject : MonoBehaviour, ISerializable, ISerializablePrefabLi
 
     public class Data : ISerializableData
     {
-        public string prefabName => "box";
+        public string prefabName => "complex";
         public float value;
         public int parentedId;
     }
 
-    public ISerializableData data => new Data()
+    ISerializableData ISerializable.data
     {
-        value = this.value,
-        parentedId = gameObject.GetInstanceID()
-    };
+        get
+        {
+            return new Data()
+            {
+                value = this.value,
+                parentedId = gameObject.GetInstanceID()
+            };
+        }
+
+        set
+        {
+            Data d = value as Data;
+            this.value = d.value;
+        }
+    }
 }
