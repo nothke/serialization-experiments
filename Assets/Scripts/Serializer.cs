@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 
-public interface ISerializable
-{
-    ISerializableData Serialize();
-    void Deserialize(ISerializableData data);
-}
-
-public interface ISerDat<T> where T : ISerializableData
+public interface ISerializable<T> where T : ISerializableData
 {
     T Serialize();
     void Deserialize(T data);
+}
+
+public interface IFastSer<T> where T : ISerializableData
+{
+    T SData { get; set; }
 }
 
 public interface ISerializableLinksHandler
@@ -82,7 +81,7 @@ public class Serializer : MonoBehaviour
 
         for (int i = 0; i < all.Length; i++)
         {
-            if (all[i] is ISerializable sobj)
+            if (all[i] is ISerializable<ISerializableData> sobj)
             {
                 Debug.Log("Found " + all[i].name);
 
@@ -126,8 +125,10 @@ public class Serializer : MonoBehaviour
             go.transform.eulerAngles = obData.loc.rot;
             go.transform.localScale = obData.loc.scl;
 
-            var obComp = go.GetComponent<ISerializable>();
+            var obComp = go.GetComponent<ISerializable<ISerializableData>>();
             obComp.Deserialize(obData.data);
+
+            Debug.Log(str);
         }
     }
 }

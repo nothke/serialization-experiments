@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SimpleObject : MonoBehaviour, ISerializable
+public class SimpleObject : MonoBehaviour, ISerializable<SimpleObject.Data>
 {
     public float floatValue;
     public int intValue;
@@ -30,7 +30,7 @@ public class SimpleObject : MonoBehaviour, ISerializable
         }
     }
 
-    public ISerializableData Serialize()
+    public Data Serialize()
     {
         return new Data()
         {
@@ -39,10 +39,9 @@ public class SimpleObject : MonoBehaviour, ISerializable
         };
     }
 
-    public void Deserialize(ISerializableData data)
+    public void Deserialize(Data data)
     {
-        var d = data as Data;
-        floatValue = d.value;
-        intValue = d.intValue;
+        floatValue = data.value;
+        intValue = data.intValue;
     }
 }

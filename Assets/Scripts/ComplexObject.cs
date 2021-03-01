@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ComplexObject : MonoBehaviour, ISerializable, ISerializablePrefabLink
+public class ComplexObject : MonoBehaviour, ISerializable<ComplexObject.Data>, ISerializablePrefabLink
 {
     public float value = 1;
     public string prefabName => "box";
@@ -14,7 +14,7 @@ public class ComplexObject : MonoBehaviour, ISerializable, ISerializablePrefabLi
         public int parentedId;
     }
     
-    public ISerializableData Serialize()
+    public Data Serialize()
     {
         return new Data()
         {
@@ -23,7 +23,7 @@ public class ComplexObject : MonoBehaviour, ISerializable, ISerializablePrefabLi
         };
     }
 
-    public void Deserialize(ISerializableData data)
+    public void Deserialize(Data data)
     {
         Data d = data as Data;
         this.value = d.value;
