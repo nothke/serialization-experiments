@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 
-using Newtonsoft.Json.Converters;
-
 public interface ISerializable
 {
     ISerializableData data { get; }
@@ -41,34 +39,54 @@ public class Serializer : MonoBehaviour
         }
     }
 
+    public struct SerializedGameObject
+    {
+        public Loc loc;
+        public ISerializableData data;
+    }
+
+    [System.Serializable]
+    public class GameData
+    {
+        public List<SerializedGameObject> sobs = new List<SerializedGameObject>();
+    }
+
+    string str;
+
     void Start()
     {
+        Serialize();
+
+
+    }
+
+    void Serialize()
+    {
         var all = FindObjectsOfType<MonoBehaviour>();
+        GameData game = new GameData();
+
         for (int i = 0; i < all.Length; i++)
         {
             if (all[i] is ISerializable sobj)
             {
                 Debug.Log("Found " + all[i].name);
 
-                var loc = new Loc(all[i].transform);
+                SerializedGameObject sob = new SerializedGameObject();
 
-                var str = JsonConvert.SerializeObject(loc, Formatting.Indented);
+                sob.loc = new Loc(all[i].transform);
+                sob.data = sobj.data;
 
-                str += JsonConvert.SerializeObject(sobj.data, Formatting.Indented);
-
-
-                if (all[i] is ISerializablePrefabLink spref)
-                {
-                    JsonConvert.SerializeObject(spref.prefabName);
-                }
-
-                Debug.Log(str);
+                game.sobs.Add(sob);
             }
         }
+
+        string str = JsonConvert.SerializeObject(game, Formatting.Indented);
+        Debug.Log(str);
+
+        this.str = str;
     }
 
-    // Update is called once per frame
-    void Update()
+    void Deserialize()
     {
 
     }
