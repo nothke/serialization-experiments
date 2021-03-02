@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 using System.IO;
+using UnityEngine.Profiling;
 
 public interface ISerializable
 {
@@ -45,7 +46,9 @@ public class Serializer : MonoBehaviour
     [System.NonSerialized]
     public Dictionary<string, GameObject> prefabsDict;
     Dictionary<ISerializable, int> linkMap;
+
     List<ISerializable> spawned;
+    Dictionary<int, ISerializable> spawnedByIdMap;
 
     public struct Loc
     {
@@ -116,39 +119,45 @@ public class Serializer : MonoBehaviour
     [ContextMenu("Serialize")]
     public void Serialize()
     {
+        float t = Time.realtimeSinceStartup;
+
         CachePrefabs();
 
-        // Gets all MonoBehaviours, might be slow
-        var all = FindObjectsOfType<MonoBehaviour>();
+        //// Gets all MonoBehaviours, might be slow
+        var allIDs = FindObjectsOfType<ID>();
         GameData game = new GameData();
 
-        var linkableSobs = new List<SerializedGameObject>();
-        var linkables = new List<ISerializableLinksHandler>();
+        // preallocate to maximum even if we are not actually going to fill all
+        var linkableSobs = new List<SerializedGameObject>(allIDs.Length);
+        var linkables = new List<ISerializableLinksHandler>(allIDs.Length);
+        linkMap = new Dictionary<ISerializable, int>(allIDs.Length);
 
-        linkMap = new Dictionary<ISerializable, int>();
-
-        for (int i = 0; i < all.Length; i++)
+        for (int i = 0; i < allIDs.Length; i++)
         {
-            //Debug.Log("F " + all[i].name + ", type: " + all[i].GetType());
+            var sobj = allIDs[i].GetComponent<ISerializable>();
 
-            if (all[i] is ISerializable sobj)
+            if (sobj == null)
             {
-                //Debug.Log("Found " + all[i].name);
+                Debug.LogError("No ISerializable found for " + allIDs[i].name + ". You should probably remove the ID component", allIDs[i].gameObject);
+                continue;
+            }
 
-                SerializedGameObject sob = new SerializedGameObject();
+            //Debug.Log("Found " + all[i].name);
 
-                sob.id = game.sobs.Count;
-                sob.loc = new Loc(all[i].transform);
-                sob.data = sobj.SerializedData;
+            SerializedGameObject sob = new SerializedGameObject();
 
-                game.sobs.Add(sob);
-                linkMap.Add(sobj, sob.id);
+            sob.id = allIDs[i].id;
+            sob.loc = new Loc(allIDs[i].transform);
+            sob.data = sobj.SerializedData;
 
-                if (all[i] is ISerializableLinksHandler obCompLink)
-                {
-                    linkableSobs.Add(sob);
-                    linkables.Add(obCompLink);
-                }
+            game.sobs.Add(sob);
+            linkMap.Add(sobj, sob.id);
+            //Debug.Log("Added " + sob.data.prefabName + " id: " + sob.id);
+
+            if (sobj is ISerializableLinksHandler obCompLink)
+            {
+                linkableSobs.Add(sob);
+                linkables.Add(obCompLink);
             }
         }
 
@@ -162,31 +171,41 @@ public class Serializer : MonoBehaviour
 
 
 
-        string str = JsonConvert.SerializeObject(game, jsonSettings);
-        Debug.Log(str);
+        Profiler.BeginSample("JSON SerializeObject");
+        str = JsonConvert.SerializeObject(game, jsonSettings);
+        Profiler.EndSample();
+        //Debug.Log(str);
 
-        this.str = str;
-
+        Profiler.BeginSample("Write to file");
         File.WriteAllText("scene.json", str);
+        Profiler.EndSample();
+
+        Debug.Log("Serialization completed in: " + (Time.realtimeSinceStartup - t));
     }
 
     public int GetIdOf(ISerializable serializable)
     {
+        Debug.Assert(linkMap.ContainsKey(serializable), "linkMap does not contain an id for ISerializable " + serializable.SerializedData.prefabName, (serializable as MonoBehaviour));
         return linkMap[serializable];
     }
 
     [ContextMenu("Deserialize")]
-    void Deserialize()
+    public void Deserialize()
     {
         CachePrefabs();
 
+        Profiler.BeginSample("Read from file");
         str = File.ReadAllText("scene.json");
+        Profiler.EndSample();
 
+        Profiler.BeginSample("Deserialize");
         GameData game = JsonConvert.DeserializeObject<GameData>(str, jsonSettings);
+        Profiler.EndSample();
 
         // Save a list of links
         List<ISerializableLinksHandler> links = new List<ISerializableLinksHandler>();
         spawned = new List<ISerializable>();
+        spawnedByIdMap = new Dictionary<int, ISerializable>();
         List<ISerializableData> linksDatas = new List<ISerializableData>();
 
         // First pass, instantiate
@@ -208,7 +227,12 @@ public class Serializer : MonoBehaviour
             Debug.Assert(obComp != null, "Deserialization: ISerializable component not found on the root of spawned GameObject. Did you forgot to apply the prefab with ISerializable component?", go);
             obComp.SerializedData = obData.data;
 
+            // Set id
+            var idComp = (obComp as Component).gameObject.AddComponent<ID>();
+            idComp.id = obData.id;
+
             spawned.Add(obComp);
+            spawnedByIdMap.Add(idComp.id, obComp);
 
             if (obComp is ISerializableLinksHandler obCompLink)
             {
@@ -224,10 +248,12 @@ public class Serializer : MonoBehaviour
         {
             links[i].OnDeserializeLinks(linksDatas[i]);
         }
+
+        Debug.Log("Deserialization: Ended");
     }
 
     public ISerializable GetSpawnedFromId(int i)
     {
-        return spawned[i];
+        return spawnedByIdMap[i];
     }
 }
