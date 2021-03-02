@@ -14,6 +14,12 @@ public interface ISerializableLinksHandler
     void OnDeserializeLinks(in ISerializableData data);
 }
 
+public interface ISerializableLinksHandler<T> where T : ISerializableData
+{
+    void OnSerializeLinks(ref T data);
+    void OnDeserializeLinks(in T data);
+}
+
 public interface ISerializablePrefabLink
 {
     string prefabName { get; }
@@ -161,8 +167,8 @@ public class Serializer : MonoBehaviour
         {
             string prefabName = obData.data.prefabName;
 
-            Debug.Assert(!string.IsNullOrEmpty(prefabName), "Attempting to spawn a prefab, but the name is empty", this);
-            Debug.Assert(prefabsDict.ContainsKey(prefabName), "Attempting to spawn a prefab, but prefab " + prefabName + " is not part of the spawn list. Did you forget to add it?", this);
+            Debug.Assert(!string.IsNullOrEmpty(prefabName), "Deserialization: Attempting to spawn a prefab, but the name is empty", this);
+            Debug.Assert(prefabsDict.ContainsKey(prefabName), "Deserialization: Attempting to spawn a prefab, but prefab " + prefabName + " is not part of the spawn list. Did you forget to add it?", this);
 
             var prefab = prefabsDict[obData.data.prefabName];
             GameObject go = Instantiate(prefab);
@@ -172,6 +178,7 @@ public class Serializer : MonoBehaviour
             go.transform.localScale = obData.loc.scl;
 
             var obComp = go.GetComponentInChildren<ISerializable>();
+            Debug.Assert(obComp != null, "Deserialization: ISerializable component not found on the root of spawned GameObject", go);
             obComp.SerializedData = obData.data;
 
             spawned.Add(obComp);
@@ -192,7 +199,7 @@ public class Serializer : MonoBehaviour
         }
     }
 
-    public ISerializable GetSpawnedComponent(int i)
+    public ISerializable GetSpawnedFromId(int i)
     {
         return spawned[i];
     }

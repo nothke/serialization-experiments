@@ -43,7 +43,7 @@ public class ComplexObject : MonoBehaviour, ISerializable, ISerializableLinksHan
     {
         var d = data as Data;
         Debug.Log("Deserializing link: " + d.childId);
-        var sobComp = Serializer.e.GetSpawnedComponent(d.childId);
+        var sobComp = Serializer.e.GetSpawnedFromId(d.childId);
         Transform t = (sobComp as MonoBehaviour).transform;
         t.parent = transform;
     }
