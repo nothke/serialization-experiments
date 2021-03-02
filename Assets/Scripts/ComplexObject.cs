@@ -9,9 +9,10 @@ public class ComplexObject : MonoBehaviour, ISerializableItem, ISerializableLink
     public float value = 1;
     public SimpleObject child;
 
+    public string PrefabName => "complex";
+
     public class Data : ISerializableData
     {
-        public string prefabName => "complex";
         public float value;
 
         public int childId;

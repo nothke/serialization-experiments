@@ -7,12 +7,12 @@ public class SerializedRigidbody : MonoBehaviour, ISerializableItem
     Rigidbody _rb;
     Rigidbody rb { get { if (!_rb) _rb = GetComponent<Rigidbody>(); return _rb; } }
 
+    public string PrefabName => "rb";
+
     public class Data : ISerializableData
     {
         public Vector3 velocity;
         public Vector3 angularVelocity;
-
-        public string prefabName => "rb";
     }
 
     Data data;

@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class ItemWithArray : MonoBehaviour, ISerializableItem
 {
+    public string PrefabName => "item_with_array";
+
     [System.Serializable]
     public class Data : ISerializableData
     {
         public int[] array;
 
-        public string prefabName => "item_with_array";
     }
 
     public Data data;

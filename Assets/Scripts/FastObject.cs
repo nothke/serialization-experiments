@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class FastObject : MonoBehaviour, ISerializableItem
 {
+    public string PrefabName => "fast";
+
     [System.Serializable]
-    public class Data : SerializableData
+    public class Data : ISerializableData
     {
-        public override string prefabName => "fast";
         public float a;
         public float b;
     }

@@ -5,11 +5,11 @@ using UnityEngine;
 public class AnotherLinkable : MonoBehaviour, ISerializableItem, ISerializableLinksHandler
 {
     public AnotherLinkable child;
+    public string PrefabName => "another_linkable";
 
     [System.Serializable]
     public class Data : ISerializableData
     {
-        public string prefabName => "another_linkable";
         public float health;
         [HideInInspector] public int childId = -1;
     }

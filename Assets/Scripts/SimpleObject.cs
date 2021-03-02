@@ -7,9 +7,10 @@ public class SimpleObject : MonoBehaviour, ISerializableItem
     public float floatValue;
     public int intValue;
 
-    public class Data : SerializableData
+    public string PrefabName => "simple";
+
+    public class Data : ISerializableData
     {
-        public override string prefabName => "simple";
         public float value;
         public int intValue;
     }

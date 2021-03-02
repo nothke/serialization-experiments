@@ -10,6 +10,7 @@ using UnityEngine.Profiling;
 /// </summary>
 public interface ISerializableItem
 {
+    string PrefabName { get; }
     ISerializableData SerializedData { get; set; }
 }
 
@@ -28,26 +29,7 @@ public interface ISerializableLinksHandler
     void OnDeserializeLinks(in ISerializableData data);
 }
 
-public interface ISerializableLinksHandler<T> where T : ISerializableData
-{
-    void OnSerializeLinks(ref T data);
-    void OnDeserializeLinks(in T data);
-}
-
-public interface ISerializablePrefabLink
-{
-    string prefabName { get; }
-}
-
-public interface ISerializableData
-{
-    string prefabName { get; }
-}
-
-public abstract class SerializableData : ISerializableData
-{
-    public abstract string prefabName { get; }
-}
+public interface ISerializableData { }
 
 public class Serializer : MonoBehaviour
 {
@@ -80,6 +62,7 @@ public class Serializer : MonoBehaviour
     {
         public int id;
         public Loc loc;
+        public string prefab;
         public ISerializableData data;
     }
 
@@ -163,6 +146,7 @@ public class Serializer : MonoBehaviour
                 SerializedItem sob = new SerializedItem
                 {
                     id = allIDs[i].id,
+                    prefab = spobj.PrefabName,
                     loc = new Loc(allIDs[i].transform),
                     data = spobj.SerializedData
                 };
@@ -214,7 +198,7 @@ public class Serializer : MonoBehaviour
 
     public int GetIdOf(ISerializableItem serializable)
     {
-        Debug.Assert(linkMap.ContainsKey(serializable), "linkMap does not contain an id for ISerializable " + serializable.SerializedData.prefabName, (serializable as MonoBehaviour));
+        Debug.Assert(linkMap.ContainsKey(serializable), "linkMap does not contain an id for ISerializable " + serializable.PrefabName, (serializable as MonoBehaviour));
         return linkMap[serializable];
     }
 
@@ -248,12 +232,12 @@ public class Serializer : MonoBehaviour
         // First pass, instantiate items
         foreach (var obData in game.siobs)
         {
-            string prefabName = obData.data.prefabName;
+            string prefabName = obData.prefab;
 
             Debug.Assert(!string.IsNullOrEmpty(prefabName), "Deserialization: Attempting to spawn a prefab, but the name is empty", this);
             Debug.Assert(prefabsDict.ContainsKey(prefabName), "Deserialization: Attempting to spawn a prefab, but prefab " + prefabName + " is not part of the spawn list. Did you forget to add it?", this);
 
-            var prefab = prefabsDict[obData.data.prefabName];
+            var prefab = prefabsDict[prefabName];
             GameObject go = Instantiate(prefab);
 
             go.transform.position = obData.loc.pos;

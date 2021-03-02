@@ -9,8 +9,6 @@ public class SceneObject : MonoBehaviour, ISerializable
     {
         public Vector3 position;
         public float f = 0;
-
-        public string prefabName => "";
     }
 
     public Data data;
