@@ -18,7 +18,7 @@ public class ComplexObject : MonoBehaviour, ISerializable
         //public SimpleObject.Data childId;
     }
 
-    public SerializableData SerializedData
+    public ISerializableData SerializedData
     {
         get
         {

@@ -14,7 +14,7 @@ public class SimpleObject : MonoBehaviour, ISerializable
         public int intValue;
     }
 
-    public SerializableData SerializedData
+    public ISerializableData SerializedData
     {
         get => new Data()
         {

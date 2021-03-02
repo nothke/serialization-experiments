@@ -13,5 +13,5 @@ public class FastObject : MonoBehaviour, ISerializable
     }
 
     public Data _data;
-    public SerializableData SerializedData { get => _data; set => _data = value as Data; }
+    public ISerializableData SerializedData { get => _data; set => _data = value as Data; }
 }

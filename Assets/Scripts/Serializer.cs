@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 public interface ISerializable
 {
-    SerializableData SerializedData { get; set; }
+    ISerializableData SerializedData { get; set; }
 }
 
 public interface ISerializableLinksHandler
