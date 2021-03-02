@@ -9,7 +9,7 @@ public class ComplexObject : MonoBehaviour, ISerializable<ComplexObject.Data>
     public float value = 1;
     public SimpleObject child;
 
-    public class Data : ISerializableData
+    public class Data : SerializableData
     {
         public string prefabName => "complex";
         public float value;

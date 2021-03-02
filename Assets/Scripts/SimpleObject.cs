@@ -7,7 +7,7 @@ public class SimpleObject : MonoBehaviour, ISerializable<SimpleObject.Data>
     public float floatValue;
     public int intValue;
 
-    public class Data : ISerializableData
+    public class Data : SerializableData
     {
         public string prefabName => "simple";
         public float value;

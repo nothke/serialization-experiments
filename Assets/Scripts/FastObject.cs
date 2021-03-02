@@ -5,7 +5,7 @@ using UnityEngine;
 public class FastObject : MonoBehaviour, ISerializable<FastObject.Data>
 {
     [System.Serializable]
-    public class Data : ISerializableData
+    public class Data : SerializableData
     {
         public string prefabName => "fast";
         public float a;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 
-public interface ISerializable<T> where T : class, ISerializableData
+public interface ISerializable<T> where T : SerializableData
 {
     T SerializedData { get; set; }
 }
@@ -21,6 +21,11 @@ public interface ISerializablePrefabLink
 public interface ISerializableData
 {
     string prefabName { get; }
+}
+
+public abstract class SerializableData : ISerializableData
+{
+    string ISerializableData.prefabName { get; }
 }
 
 public class Serializer : MonoBehaviour
@@ -78,11 +83,11 @@ public class Serializer : MonoBehaviour
         {
             Debug.Log("F " + all[i].name + ", type: " + all[i].GetType());
 
-            //var test = (ISerializable<ISerializableData>)all[i];
-            //if (test != null)
-                //Debug.Log("WORKS!");
+            var test = (ISerializable<SerializableData>)all[i];
+            if (test != null)
+                Debug.Log("WORKS!");
 
-            if (all[i] is ISerializable<SimpleObject.Data> sobj)
+            if (all[i] is ISerializable<SerializableData> sobj)
             {
                 Debug.Log("Found " + all[i].name);
 
@@ -130,8 +135,8 @@ public class Serializer : MonoBehaviour
             go.transform.eulerAngles = obData.loc.rot;
             go.transform.localScale = obData.loc.scl;
 
-            var obComp = go.GetComponent<ISerializable<ISerializableData>>();
-            obComp.SerializedData = obData.data;
+            var obComp = go.GetComponent<ISerializable<SerializableData>>();
+            obComp.SerializedData = obData.data as SerializableData;
 
             if (obComp is ISerializableLinksHandler obCompLink)
                 links.Add(obCompLink);
