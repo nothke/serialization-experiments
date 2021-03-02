@@ -2,19 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SimpleObject : MonoBehaviour, ISerializable<SimpleObject.Data>
+public class SimpleObject : MonoBehaviour, ISerializable
 {
     public float floatValue;
     public int intValue;
 
     public class Data : SerializableData
     {
-        public string prefabName => "simple";
+        public override string prefabName => "simple";
         public float value;
         public int intValue;
     }
 
-    public Data SerializedData
+    public SerializableData SerializedData
     {
         get => new Data()
         {
@@ -24,8 +24,9 @@ public class SimpleObject : MonoBehaviour, ISerializable<SimpleObject.Data>
 
         set
         {
-            floatValue = value.value;
-            intValue = value.intValue;
+            var d = value as Data;
+            floatValue = d.value;
+            intValue = d.intValue;
         }
     }
 }

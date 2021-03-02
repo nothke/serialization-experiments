@@ -4,21 +4,21 @@ using UnityEngine;
 
 using Newtonsoft.Json;
 
-public class ComplexObject : MonoBehaviour, ISerializable<ComplexObject.Data>
+public class ComplexObject : MonoBehaviour, ISerializable
 {
     public float value = 1;
     public SimpleObject child;
 
     public class Data : SerializableData
     {
-        public string prefabName => "complex";
+        public override string prefabName => "complex";
         public float value;
 
         //[JsonProperty(IsReference = true)]
         //public SimpleObject.Data childId;
     }
 
-    public Data SerializedData
+    public SerializableData SerializedData
     {
         get
         {
@@ -30,7 +30,8 @@ public class ComplexObject : MonoBehaviour, ISerializable<ComplexObject.Data>
         }
         set
         {
-            this.value = value.value;
+            this.value = ((Data)value).value;
         }
     }
+
 }

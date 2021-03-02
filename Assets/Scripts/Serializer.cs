@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 
-public interface ISerializable<T> where T : SerializableData
+public interface ISerializable
 {
-    T SerializedData { get; set; }
+    SerializableData SerializedData { get; set; }
 }
 
 public interface ISerializableLinksHandler
@@ -25,7 +25,7 @@ public interface ISerializableData
 
 public abstract class SerializableData : ISerializableData
 {
-    string ISerializableData.prefabName { get; }
+    public abstract string prefabName { get; }
 }
 
 public class Serializer : MonoBehaviour
@@ -83,11 +83,11 @@ public class Serializer : MonoBehaviour
         {
             Debug.Log("F " + all[i].name + ", type: " + all[i].GetType());
 
-            var test = (ISerializable<SerializableData>)all[i];
-            if (test != null)
-                Debug.Log("WORKS!");
+            //var test = (ISerializable)all[i];
+            //if (test != null)
+            //Debug.Log("WORKS!");
 
-            if (all[i] is ISerializable<SerializableData> sobj)
+            if (all[i] is ISerializable sobj)
             {
                 Debug.Log("Found " + all[i].name);
 
@@ -128,6 +128,11 @@ public class Serializer : MonoBehaviour
         // First pass, instantiate
         foreach (var obData in game.sobs)
         {
+            string prefabName = obData.data.prefabName;
+
+            Debug.Assert(!string.IsNullOrEmpty(prefabName), "Attempting to spawn a prefab, but the name is empty", this);
+            Debug.Assert(prefabsDict.ContainsKey(prefabName), "Attempting to spawn a prefab, but prefab " + prefabName + " is not part of the spawn list. Did you forget to add it?", this);
+
             var prefab = prefabsDict[obData.data.prefabName];
             GameObject go = Instantiate(prefab);
 
@@ -135,13 +140,13 @@ public class Serializer : MonoBehaviour
             go.transform.eulerAngles = obData.loc.rot;
             go.transform.localScale = obData.loc.scl;
 
-            var obComp = go.GetComponent<ISerializable<SerializableData>>();
+            var obComp = go.GetComponent<ISerializable>();
             obComp.SerializedData = obData.data as SerializableData;
 
             if (obComp is ISerializableLinksHandler obCompLink)
                 links.Add(obCompLink);
 
-            Debug.Log(str);
+            //Debug.Log(str);
         }
 
         // Second pass, link
