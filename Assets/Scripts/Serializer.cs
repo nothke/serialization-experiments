@@ -104,6 +104,10 @@ public class Serializer : MonoBehaviour
 
         yield return null;
 
+        DestroyAllSerializableItems();
+
+        yield return null;
+
         Deserialize();
     }
 
@@ -116,7 +120,6 @@ public class Serializer : MonoBehaviour
                 prefabsDict.Add(go.name, go);
         }
     }
-
 
     [ContextMenu("Serialize")]
     public void Serialize()
@@ -200,6 +203,26 @@ public class Serializer : MonoBehaviour
     {
         Debug.Assert(linkMap.ContainsKey(serializable), "linkMap does not contain an id for ISerializable " + serializable.PrefabName, (serializable as MonoBehaviour));
         return linkMap[serializable];
+    }
+
+    void DestroyAllSerializableItems()
+    {
+        var allIDs = FindObjectsOfType<ID>();
+        for (int i = allIDs.Length - 1; i >= 0; i--)
+        {
+            var item = allIDs[i].GetComponent<ISerializableItem>();
+            if (item != null)
+            {
+                Destroy(allIDs[i].gameObject);
+            }
+        }
+    }
+
+    [ContextMenu("Load All")]
+    public void LoadAll()
+    {
+        DestroyAllSerializableItems();
+        Deserialize();
     }
 
     [ContextMenu("Deserialize")]
