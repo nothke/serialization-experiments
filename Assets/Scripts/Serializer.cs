@@ -10,7 +10,8 @@ public interface ISerializable
 
 public interface ISerializableLinksHandler
 {
-    void OnDeserializeHandleLinks();
+    void OnSerializeLinks(ref ISerializableData data);
+    void OnDeserializeLinks(in ISerializableData data);
 }
 
 public interface ISerializablePrefabLink
@@ -30,9 +31,14 @@ public abstract class SerializableData : ISerializableData
 
 public class Serializer : MonoBehaviour
 {
+    public static Serializer e;
+    void Awake() { e = this; }
+
     public GameObject[] prefabs;
     [System.NonSerialized]
     public Dictionary<string, GameObject> prefabsDict;
+    Dictionary<ISerializable, int> linkMap;
+    List<ISerializable> spawned;
 
     public struct Loc
     {
@@ -50,6 +56,7 @@ public class Serializer : MonoBehaviour
 
     public struct SerializedGameObject
     {
+        public int id;
         public Loc loc;
         public ISerializableData data;
     }
@@ -79,13 +86,14 @@ public class Serializer : MonoBehaviour
         var all = FindObjectsOfType<MonoBehaviour>();
         GameData game = new GameData();
 
+        var linkableSobs = new List<SerializedGameObject>();
+        var linkables = new List<ISerializableLinksHandler>();
+
+        linkMap = new Dictionary<ISerializable, int>();
+
         for (int i = 0; i < all.Length; i++)
         {
-            Debug.Log("F " + all[i].name + ", type: " + all[i].GetType());
-
-            //var test = (ISerializable)all[i];
-            //if (test != null)
-            //Debug.Log("WORKS!");
+            //Debug.Log("F " + all[i].name + ", type: " + all[i].GetType());
 
             if (all[i] is ISerializable sobj)
             {
@@ -93,11 +101,27 @@ public class Serializer : MonoBehaviour
 
                 SerializedGameObject sob = new SerializedGameObject();
 
+                sob.id = game.sobs.Count;
                 sob.loc = new Loc(all[i].transform);
                 sob.data = sobj.SerializedData;
 
                 game.sobs.Add(sob);
+                linkMap.Add(sobj, sob.id);
+
+                if (all[i] is ISerializableLinksHandler obCompLink)
+                {
+                    linkableSobs.Add(sob);
+                    linkables.Add(obCompLink);
+                }
             }
+        }
+
+        // Pass 2: Serialize links
+        for (int i = 0; i < linkableSobs.Count; i++)
+        {
+            var sob = linkableSobs[i];
+            var obCompLink = linkables[i];
+            obCompLink.OnSerializeLinks(ref sob.data);
         }
 
         var settings = new JsonSerializerSettings()
@@ -112,6 +136,11 @@ public class Serializer : MonoBehaviour
         this.str = str;
     }
 
+    public int GetIdOf(ISerializable serializable)
+    {
+        return linkMap[serializable];
+    }
+
     void Deserialize()
     {
         var settings = new JsonSerializerSettings()
@@ -124,6 +153,8 @@ public class Serializer : MonoBehaviour
 
         // Save a list of links
         List<ISerializableLinksHandler> links = new List<ISerializableLinksHandler>();
+        spawned = new List<ISerializable>();
+        List<ISerializableData> linksDatas = new List<ISerializableData>();
 
         // First pass, instantiate
         foreach (var obData in game.sobs)
@@ -140,19 +171,29 @@ public class Serializer : MonoBehaviour
             go.transform.eulerAngles = obData.loc.rot;
             go.transform.localScale = obData.loc.scl;
 
-            var obComp = go.GetComponent<ISerializable>();
-            obComp.SerializedData = obData.data as SerializableData;
+            var obComp = go.GetComponentInChildren<ISerializable>();
+            obComp.SerializedData = obData.data;
+
+            spawned.Add(obComp);
 
             if (obComp is ISerializableLinksHandler obCompLink)
+            {
                 links.Add(obCompLink);
+                linksDatas.Add(obData.data);
+            }
 
             //Debug.Log(str);
         }
 
         // Second pass, link
-        foreach (var obCompLink in links)
+        for (int i = 0; i < links.Count; i++)
         {
-            obCompLink.OnDeserializeHandleLinks();
+            links[i].OnDeserializeLinks(linksDatas[i]);
         }
+    }
+
+    public ISerializable GetSpawnedComponent(int i)
+    {
+        return spawned[i];
     }
 }
