@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
+using System.IO;
 
 public interface ISerializable
 {
@@ -50,13 +51,13 @@ public class Serializer : MonoBehaviour
     {
         public Vector3 pos;
         public Vector3 rot;
-        public Vector3 scl;
+        //public Vector3 scl;
 
         public Loc(Transform t)
         {
             pos = t.position;
             rot = t.eulerAngles;
-            scl = t.localScale;
+            //scl = t.localScale;
         }
     }
 
@@ -75,19 +76,48 @@ public class Serializer : MonoBehaviour
 
     string str;
 
-    void Start()
+    JsonSerializerSettings jsonSettings = new JsonSerializerSettings()
+    {
+        TypeNameHandling = TypeNameHandling.Auto,
+        Formatting = Formatting.None
+    };
+
+
+    IEnumerator Start()
     {
         prefabsDict = new Dictionary<string, GameObject>(prefabs.Length);
         foreach (var go in prefabs)
             prefabsDict.Add(go.name, go);
 
+        yield return null;
+
         Serialize();
+
+        yield return null;
+
+        File.WriteAllText("scene.json", str);
+
+        yield return null;
 
         Deserialize();
     }
 
-    void Serialize()
+    void CachePrefabs()
     {
+        if (prefabsDict == null || prefabsDict.Count == 0)
+        {
+            prefabsDict = new Dictionary<string, GameObject>(prefabs.Length);
+            foreach (var go in prefabs)
+                prefabsDict.Add(go.name, go);
+        }
+    }
+
+
+    [ContextMenu("Serialize")]
+    public void Serialize()
+    {
+        CachePrefabs();
+
         // Gets all MonoBehaviours, might be slow
         var all = FindObjectsOfType<MonoBehaviour>();
         GameData game = new GameData();
@@ -103,7 +133,7 @@ public class Serializer : MonoBehaviour
 
             if (all[i] is ISerializable sobj)
             {
-                Debug.Log("Found " + all[i].name);
+                //Debug.Log("Found " + all[i].name);
 
                 SerializedGameObject sob = new SerializedGameObject();
 
@@ -130,16 +160,14 @@ public class Serializer : MonoBehaviour
             obCompLink.OnSerializeLinks(ref sob.data);
         }
 
-        var settings = new JsonSerializerSettings()
-        {
-            TypeNameHandling = TypeNameHandling.Auto,
-            Formatting = Formatting.Indented
-        };
 
-        string str = JsonConvert.SerializeObject(game, settings);
+
+        string str = JsonConvert.SerializeObject(game, jsonSettings);
         Debug.Log(str);
 
         this.str = str;
+
+        File.WriteAllText("scene.json", str);
     }
 
     public int GetIdOf(ISerializable serializable)
@@ -147,15 +175,14 @@ public class Serializer : MonoBehaviour
         return linkMap[serializable];
     }
 
+    [ContextMenu("Deserialize")]
     void Deserialize()
     {
-        var settings = new JsonSerializerSettings()
-        {
-            TypeNameHandling = TypeNameHandling.Auto,
-            Formatting = Formatting.Indented
-        };
+        CachePrefabs();
 
-        GameData game = JsonConvert.DeserializeObject<GameData>(str, settings);
+        str = File.ReadAllText("scene.json");
+
+        GameData game = JsonConvert.DeserializeObject<GameData>(str, jsonSettings);
 
         // Save a list of links
         List<ISerializableLinksHandler> links = new List<ISerializableLinksHandler>();
@@ -175,10 +202,10 @@ public class Serializer : MonoBehaviour
 
             go.transform.position = obData.loc.pos;
             go.transform.eulerAngles = obData.loc.rot;
-            go.transform.localScale = obData.loc.scl;
+            //go.transform.localScale = obData.loc.scl;
 
             var obComp = go.GetComponentInChildren<ISerializable>();
-            Debug.Assert(obComp != null, "Deserialization: ISerializable component not found on the root of spawned GameObject", go);
+            Debug.Assert(obComp != null, "Deserialization: ISerializable component not found on the root of spawned GameObject. Did you forgot to apply the prefab with ISerializable component?", go);
             obComp.SerializedData = obData.data;
 
             spawned.Add(obComp);
