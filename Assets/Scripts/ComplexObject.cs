@@ -4,7 +4,7 @@ using UnityEngine;
 
 using Newtonsoft.Json;
 
-public class ComplexObject : MonoBehaviour, ISerializable, ISerializableLinksHandler
+public class ComplexObject : MonoBehaviour, ISerializableItem, ISerializableLinksHandler
 {
     public float value = 1;
     public SimpleObject child;

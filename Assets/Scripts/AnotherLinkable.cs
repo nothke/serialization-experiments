@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AnotherLinkable : MonoBehaviour, ISerializable, ISerializableLinksHandler
+public class AnotherLinkable : MonoBehaviour, ISerializableItem, ISerializableLinksHandler
 {
     public AnotherLinkable child;
 

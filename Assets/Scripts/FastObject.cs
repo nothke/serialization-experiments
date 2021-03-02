@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FastObject : MonoBehaviour, ISerializable
+public class FastObject : MonoBehaviour, ISerializableItem
 {
     [System.Serializable]
     public class Data : SerializableData

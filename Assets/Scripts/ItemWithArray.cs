@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ItemWithArray : MonoBehaviour, ISerializable
+public class ItemWithArray : MonoBehaviour, ISerializableItem
 {
     [System.Serializable]
     public class Data : ISerializableData

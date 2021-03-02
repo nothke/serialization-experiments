@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SerializedRigidbody : MonoBehaviour, ISerializable
+public class SerializedRigidbody : MonoBehaviour, ISerializableItem
 {
     Rigidbody _rb;
     Rigidbody rb { get { if (!_rb) _rb = GetComponent<Rigidbody>(); return _rb; } }

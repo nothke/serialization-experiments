@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SimpleObject : MonoBehaviour, ISerializable
+public class SimpleObject : MonoBehaviour, ISerializableItem
 {
     public float floatValue;
     public int intValue;
