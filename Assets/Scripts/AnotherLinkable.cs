@@ -4,7 +4,7 @@ using UnityEngine;
 
 using Nothke.Serialization;
 
-public class AnotherLinkable : MonoBehaviour, ISerializableItem, ISerializableLinksHandler
+public class AnotherLinkable : MonoBehaviour, ISerializablePrefabInstance, ISerializableLinksHandler
 {
     public AnotherLinkable child;
     public string PrefabName => "another_linkable";

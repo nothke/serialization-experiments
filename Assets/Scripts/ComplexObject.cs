@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 using Nothke.Serialization;
 
-public class ComplexObject : MonoBehaviour, ISerializableItem, ISerializableLinksHandler
+public class ComplexObject : MonoBehaviour, ISerializablePrefabInstance, ISerializableLinksHandler
 {
     public float value = 1;
     public SimpleObject child;

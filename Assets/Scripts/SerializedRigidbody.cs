@@ -4,7 +4,7 @@ using UnityEngine;
 
 using Nothke.Serialization;
 
-public class SerializedRigidbody : MonoBehaviour, ISerializableItem
+public class SerializedRigidbody : MonoBehaviour, ISerializablePrefabInstance
 {
     Rigidbody _rb;
     Rigidbody rb { get { if (!_rb) _rb = GetComponent<Rigidbody>(); return _rb; } }

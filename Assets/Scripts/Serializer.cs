@@ -8,23 +8,26 @@ using UnityEngine.Profiling;
 namespace Nothke.Serialization
 {
     /// <summary>
-    /// An "item" is an object that is instantiated from a prefab database.
+    /// Implement this on a behavior that is instantiated from a prefab.
+    /// The prefab with the same name must be assigned in the Serializable instance.
     /// </summary>
-    public interface ISerializableItem
+    public interface ISerializablePrefabInstance
     {
         string PrefabName { get; }
         ISerializableData SerializedData { get; set; }
     }
 
     /// <summary>
-    /// Use this for any object that exists on the start of the level and is not necessarily spawned from a prefab.
-    /// This also includes objects that are children of prefabs.
+    /// Implement this on a behavior which exists on the start of the level and is not necessarily spawned from a prefab.
     /// </summary>
     public interface ISerializable
     {
         ISerializableData SerializedData { get; set; }
     }
 
+    /// <summary>
+    /// Implement this on a behavior which needs to connect to another object
+    /// </summary>
     public interface ISerializableLinksHandler
     {
         void OnSerializeLinks(ref ISerializableData data);
@@ -41,10 +44,10 @@ namespace Nothke.Serialization
         public GameObject[] prefabs;
         [System.NonSerialized]
         public Dictionary<string, GameObject> prefabsDict;
-        Dictionary<ISerializableItem, int> linkMap;
+        Dictionary<ISerializablePrefabInstance, int> linkMap;
 
-        List<ISerializableItem> spawned;
-        Dictionary<int, ISerializableItem> spawnedByIdMap;
+        List<ISerializablePrefabInstance> spawned;
+        Dictionary<int, ISerializablePrefabInstance> spawnedByIdMap;
 
         string filePath = "scene.json";
 
@@ -153,11 +156,11 @@ namespace Nothke.Serialization
             // preallocate to maximum even if we are not actually going to fill all
             var linkableSobs = new List<SerializedItem>(allIDs.Length);
             var linkables = new List<ISerializableLinksHandler>(allIDs.Length);
-            linkMap = new Dictionary<ISerializableItem, int>(allIDs.Length);
+            linkMap = new Dictionary<ISerializablePrefabInstance, int>(allIDs.Length);
 
             for (int i = 0; i < allIDs.Length; i++)
             {
-                var spobj = allIDs[i].GetComponent<ISerializableItem>();
+                var spobj = allIDs[i].GetComponent<ISerializablePrefabInstance>();
                 var sobj = allIDs[i].GetComponent<ISerializable>();
 
                 if (spobj != null)
@@ -218,7 +221,7 @@ namespace Nothke.Serialization
             Debug.Log("Serialization completed in: " + (Time.realtimeSinceStartup - t));
         }
 
-        public int GetIdOf(ISerializableItem serializable)
+        public int GetIdOf(ISerializablePrefabInstance serializable)
         {
             Debug.Assert(linkMap.ContainsKey(serializable), "linkMap does not contain an id for ISerializable " + serializable.PrefabName, (serializable as MonoBehaviour));
             return linkMap[serializable];
@@ -229,7 +232,7 @@ namespace Nothke.Serialization
             var allIDs = FindObjectsOfType<ID>();
             for (int i = allIDs.Length - 1; i >= 0; i--)
             {
-                var item = allIDs[i].GetComponent<ISerializableItem>();
+                var item = allIDs[i].GetComponent<ISerializablePrefabInstance>();
                 if (item != null)
                 {
                     Destroy(allIDs[i].gameObject);
@@ -259,8 +262,8 @@ namespace Nothke.Serialization
 
             // Save a list of links
             List<ISerializableLinksHandler> links = new List<ISerializableLinksHandler>();
-            spawned = new List<ISerializableItem>();
-            spawnedByIdMap = new Dictionary<int, ISerializableItem>();
+            spawned = new List<ISerializablePrefabInstance>();
+            spawnedByIdMap = new Dictionary<int, ISerializablePrefabInstance>();
             List<ISerializableData> linksDatas = new List<ISerializableData>();
 
             // Get all already exisitng ids in the scene
@@ -286,7 +289,7 @@ namespace Nothke.Serialization
                 go.transform.eulerAngles = obData.loc.rot;
                 //go.transform.localScale = obData.loc.scl;
 
-                var obComp = go.GetComponentInChildren<ISerializableItem>();
+                var obComp = go.GetComponentInChildren<ISerializablePrefabInstance>();
                 Debug.Assert(obComp != null, "Deserialization: ISerializable component not found on the root of spawned GameObject. Did you forgot to apply the prefab with ISerializable component?", go);
                 obComp.SerializedData = obData.data;
 
@@ -326,7 +329,7 @@ namespace Nothke.Serialization
             Debug.Log("Deserialization: Ended");
         }
 
-        public ISerializableItem GetSpawnedFromId(int i)
+        public ISerializablePrefabInstance GetSpawnedFromId(int i)
         {
             return spawnedByIdMap[i];
         }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 using Nothke.Serialization;
 
-public class SimpleObject : MonoBehaviour, ISerializableItem
+public class SimpleObject : MonoBehaviour, ISerializablePrefabInstance
 {
     public float floatValue;
     public int intValue;
