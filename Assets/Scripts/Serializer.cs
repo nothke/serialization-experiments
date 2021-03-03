@@ -9,7 +9,7 @@ namespace Nothke.Serialization
 {
     /// <summary>
     /// Implement this on a behavior that is instantiated from a prefab.
-    /// The prefab with the same name must be assigned in the Serializable instance.
+    /// The prefab with the same name must be assigned in the Serializer's prefab list.
     /// </summary>
     public interface ISerializablePrefabInstance
     {
@@ -82,7 +82,7 @@ namespace Nothke.Serialization
         JsonSerializerSettings jsonSettings = new JsonSerializerSettings()
         {
             TypeNameHandling = TypeNameHandling.Auto, // Enables type recognition
-            Formatting = Formatting.Indented // Set to indented to make it readable
+            Formatting = Formatting.None // Set to indented to make it readable
         };
 
         string str;
@@ -204,13 +204,6 @@ namespace Nothke.Serialization
             Profiler.EndSample();
 
             Debug.Log("Serialization completed in: " + (Time.realtimeSinceStartup - t));
-        }
-
-        [ContextMenu("Test Load")]
-        public void LoadAll()
-        {
-            DestroyAllSerializablePrefabInstances();
-            Deserialize();
         }
 
         [ContextMenu("Deserialize")]

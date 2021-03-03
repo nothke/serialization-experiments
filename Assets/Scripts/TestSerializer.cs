@@ -27,5 +27,14 @@ namespace Nothke.Serialization.Testing
             yield return null;
             Serializer.e.Deserialize();
         }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.S))
+                Save();
+
+            if (Input.GetKeyDown(KeyCode.D))
+                Load();
+        }
     }
 }
