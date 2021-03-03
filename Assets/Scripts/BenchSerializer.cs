@@ -50,7 +50,7 @@ namespace Nothke.Serialization.Testing
 
             yield return null;
             float t = Time.realtimeSinceStartup;
-            Serializer.e.SerializeTest();
+            Serializer.e.SerializeToDefaultFile();
             serializeTime = (Time.realtimeSinceStartup - t);
             yield return null;
 

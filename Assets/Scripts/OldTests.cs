@@ -4,7 +4,7 @@ using UnityEngine;
 
 using Newtonsoft.Json;
 
-public class Player : MonoBehaviour
+public class OldTests : MonoBehaviour
 {
     public class BaseWeapon
     {
