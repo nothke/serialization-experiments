@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Nothke.Serialization;
+
 public class ItemWithArray : MonoBehaviour, ISerializableItem
 {
     public string PrefabName => "item_with_array";

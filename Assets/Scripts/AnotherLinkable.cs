@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Nothke.Serialization;
+
 public class AnotherLinkable : MonoBehaviour, ISerializableItem, ISerializableLinksHandler
 {
     public AnotherLinkable child;

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Nothke.Serialization;
+
 public class SimpleObject : MonoBehaviour, ISerializableItem
 {
     public float floatValue;

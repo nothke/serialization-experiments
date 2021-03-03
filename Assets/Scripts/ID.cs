@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ID : MonoBehaviour
+namespace Nothke.Serialization
 {
-    public int id;
-
-    private void OnValidate()
+    public class ID : MonoBehaviour
     {
-        if (id == 0)
-            SetNew();
-    }
+        public int id;
 
-    public void SetNew()
-    {
-        id = Random.Range(int.MinValue, int.MaxValue);
+        private void OnValidate()
+        {
+            if (id == 0)
+                SetNew();
+        }
+
+        public void SetNew()
+        {
+            id = Random.Range(int.MinValue, int.MaxValue);
+        }
     }
 }

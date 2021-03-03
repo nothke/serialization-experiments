@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Nothke.Serialization;
+
 public class FastObject : MonoBehaviour, ISerializableItem
 {
     public string PrefabName => "fast";

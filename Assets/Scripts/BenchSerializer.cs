@@ -2,59 +2,62 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BenchSerializer : MonoBehaviour
+namespace Nothke.Serialization.Testing
 {
-    public GameObject prefab;
-    public int count = 1000;
-
-    float serializeTime;
-    float deserializeTime;
-
-    void Start()
+    public class BenchSerializer : MonoBehaviour
     {
-        StartCoroutine(Run());
-    }
+        public GameObject prefab;
+        public int count = 1000;
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.S))
+        float serializeTime;
+        float deserializeTime;
+
+        void Start()
+        {
             StartCoroutine(Run());
+        }
 
-        if (Input.GetKeyDown(KeyCode.D))
+        private void Update()
         {
+            if (Input.GetKeyDown(KeyCode.S))
+                StartCoroutine(Run());
+
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                float t = Time.realtimeSinceStartup;
+                Serializer.e.Deserialize();
+                deserializeTime = (Time.realtimeSinceStartup - t);
+            }
+        }
+
+        private void OnGUI()
+        {
+            GUILayout.Label("Serialize: " + serializeTime);
+            GUILayout.Label("Deserialize: " + deserializeTime);
+        }
+
+        IEnumerator Run()
+        {
+            yield return null;
+
+            List<GameObject> gos = new List<GameObject>();
+            for (int i = 0; i < count; i++)
+            {
+                var go = Instantiate(prefab, Random.insideUnitSphere * 100, Random.rotation);
+                gos.Add(go);
+                go.AddComponent<ID>().SetNew();
+            }
+
+            yield return null;
             float t = Time.realtimeSinceStartup;
-            Serializer.e.Deserialize();
-            deserializeTime = (Time.realtimeSinceStartup - t);
-        }
-    }
+            Serializer.e.SerializeTest();
+            serializeTime = (Time.realtimeSinceStartup - t);
+            yield return null;
 
-    private void OnGUI()
-    {
-        GUILayout.Label("Serialize: " + serializeTime);
-        GUILayout.Label("Deserialize: " + deserializeTime);
-    }
-
-    IEnumerator Run()
-    {
-        yield return null;
-
-        List<GameObject> gos = new List<GameObject>();
-        for (int i = 0; i < count; i++)
-        {
-            var go = Instantiate(prefab, Random.insideUnitSphere * 100, Random.rotation);
-            gos.Add(go);
-            go.AddComponent<ID>().SetNew();
-        }
-
-        yield return null;
-        float t = Time.realtimeSinceStartup;
-        Serializer.e.SerializeTest();
-        serializeTime = (Time.realtimeSinceStartup - t);
-        yield return null;
-
-        for (int i = gos.Count - 1; i >= 0; i--)
-        {
-            Destroy(gos[i]);
+            for (int i = gos.Count - 1; i >= 0; i--)
+            {
+                Destroy(gos[i]);
+            }
         }
     }
 }

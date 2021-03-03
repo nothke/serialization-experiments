@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Nothke.Serialization;
+
 public class SerializedRigidbody : MonoBehaviour, ISerializableItem
 {
     Rigidbody _rb;

@@ -4,6 +4,8 @@ using UnityEngine;
 
 using Newtonsoft.Json;
 
+using Nothke.Serialization;
+
 public class ComplexObject : MonoBehaviour, ISerializableItem, ISerializableLinksHandler
 {
     public float value = 1;
