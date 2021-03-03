@@ -48,7 +48,7 @@ public class BenchSerializer : MonoBehaviour
 
         yield return null;
         float t = Time.realtimeSinceStartup;
-        Serializer.e.Serialize();
+        Serializer.e.SerializeTest();
         serializeTime = (Time.realtimeSinceStartup - t);
         yield return null;
 

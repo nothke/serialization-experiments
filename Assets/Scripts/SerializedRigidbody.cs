@@ -9,6 +9,7 @@ public class SerializedRigidbody : MonoBehaviour, ISerializableItem
 
     public string PrefabName => "rb";
 
+    [System.Serializable]
     public class Data : ISerializableData
     {
         public Vector3 velocity;

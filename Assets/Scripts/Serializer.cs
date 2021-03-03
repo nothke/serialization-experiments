@@ -4,6 +4,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using System.IO;
 using UnityEngine.Profiling;
+using System.Runtime.Serialization.Formatters.Binary;
 
 /// <summary>
 /// An "item" is an object that is instantiated from a prefab database.
@@ -44,6 +45,9 @@ public class Serializer : MonoBehaviour
     List<ISerializableItem> spawned;
     Dictionary<int, ISerializableItem> spawnedByIdMap;
 
+    string filePath = "scene.json";
+
+    [System.Serializable]
     public struct Loc
     {
         public Vector3 pos;
@@ -58,6 +62,7 @@ public class Serializer : MonoBehaviour
         }
     }
 
+    [System.Serializable]
     public struct SerializedItem
     {
         public int id;
@@ -66,6 +71,7 @@ public class Serializer : MonoBehaviour
         public ISerializableData data;
     }
 
+    [System.Serializable]
     public struct SerializedObject
     {
         public int id;
@@ -96,7 +102,7 @@ public class Serializer : MonoBehaviour
 
         yield return null;
 
-        Serialize();
+        Serialize(filePath);
 
         yield return null;
 
@@ -111,7 +117,7 @@ public class Serializer : MonoBehaviour
         Deserialize();
     }
 
-    void CachePrefabs()
+    void CachePrefabsIfNeeded()
     {
         if (prefabsDict == null || prefabsDict.Count == 0)
         {
@@ -121,15 +127,26 @@ public class Serializer : MonoBehaviour
         }
     }
 
-    [ContextMenu("Serialize")]
-    public void Serialize()
+    [ContextMenu("Serialize Test")]
+    public void SerializeTest()
+    {
+        Serialize(filePath);
+    }
+
+    public void Serialize(string filePath)
     {
         float t = Time.realtimeSinceStartup;
 
-        CachePrefabs();
+        CachePrefabsIfNeeded();
 
-        //// Gets all MonoBehaviours, might be slow
         var allIDs = FindObjectsOfType<ID>();
+
+        if (allIDs.Length == 0)
+        {
+            Debug.LogWarning("Found no id objects, nothing to serialize");
+            return;
+        }
+
         GameData game = new GameData();
 
         // preallocate to maximum even if we are not actually going to fill all
@@ -189,11 +206,12 @@ public class Serializer : MonoBehaviour
 
         Profiler.BeginSample("JSON SerializeObject");
         str = JsonConvert.SerializeObject(game, jsonSettings);
+
         Profiler.EndSample();
         //Debug.Log(str);
 
         Profiler.BeginSample("Write to file");
-        File.WriteAllText("scene.json", str);
+        File.WriteAllText(filePath, str);
         Profiler.EndSample();
 
         Debug.Log("Serialization completed in: " + (Time.realtimeSinceStartup - t));
@@ -228,10 +246,10 @@ public class Serializer : MonoBehaviour
     [ContextMenu("Deserialize")]
     public void Deserialize()
     {
-        CachePrefabs();
+        CachePrefabsIfNeeded();
 
         Profiler.BeginSample("Read from file");
-        str = File.ReadAllText("scene.json");
+        str = File.ReadAllText(filePath);
         Profiler.EndSample();
 
         Profiler.BeginSample("Deserialize");
