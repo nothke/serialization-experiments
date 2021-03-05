@@ -9,7 +9,7 @@ namespace Nothke.Serialization
 {
     /// <summary>
     /// Implement this on every behavior you wish to serialize.
-    /// Both for behaviors that exists on the start of the level and those that are spawned from prefabs.
+    /// Use the data's setter and getter to implement custom behavior when serializaing and deserializing.
     /// </summary>
     public interface ISerializable
     {
@@ -17,7 +17,7 @@ namespace Nothke.Serialization
     }
 
     /// <summary>
-    /// Implement this on a behavior that is instantiated from a prefab.
+    /// Implement this on a behavior that is instantiated from a prefab (in addition to ISerializable).
     /// The prefab with the same name must be assigned in the Serializer's prefab list.
     /// </summary>
     public interface ISerializablePrefabInstance
@@ -26,9 +26,9 @@ namespace Nothke.Serialization
     }
 
     /// <summary>
-    /// Implement this on a behavior which needs to connect to another object
+    /// Implement this on a behavior which needs to connect to another object (in addition to ISerializable).
     /// </summary>
-    public interface ISerializableLinksHandler
+    public interface ISerializableLink
     {
         void OnSerializeLinks(ref ISerializableData data);
         void OnDeserializeLinks(in ISerializableData data);
@@ -47,7 +47,7 @@ namespace Nothke.Serialization
         [System.Serializable]
         public class GameData
         {
-            public List<SerializedPrefabInstance> siobs = new List<SerializedPrefabInstance>();
+            public List<SerializedPrefabInstance> spiobs = new List<SerializedPrefabInstance>();
             public List<SerializedObject> sobs = new List<SerializedObject>();
         }
 
@@ -69,24 +69,26 @@ namespace Nothke.Serialization
         }
 
         // Serialization cache
-        [System.NonSerialized]
-        public Dictionary<string, GameObject> prefabByNameMap;
+        Dictionary<string, GameObject> prefabByNameMap;
         Dictionary<ISerializablePrefabInstance, int> idBySpawnedMap;
 
         // Deserialization cache
-        //List<ISerializablePrefabInstance> spawned;
         Dictionary<int, ISerializablePrefabInstance> spawnedByIdMap;
 
-        string defaultFilePath = "scene.json";
+        const string defaultFilePath = "scene.json";
 
         JsonSerializerSettings jsonSettings = new JsonSerializerSettings()
         {
             TypeNameHandling = TypeNameHandling.Auto, // Enables type recognition
-            Formatting = Formatting.None // Set to indented to make it readable
+            Formatting = Formatting.None // Set to indented to make it human readable
         };
 
         string str;
 
+        /// <summary>
+        /// Call this when debugging before Serialize() to test if the scene has been set up properly.
+        /// Checks if there are no duplicate IDs, no IDs with no ISerializables etc.
+        /// </summary>
         public void ValidateScene()
         {
             var ids = FindObjectsOfType<ID>(); // alloc
@@ -134,10 +136,8 @@ namespace Nothke.Serialization
             GameData game = new GameData(); // alloc
 
             // preallocate to maximum even if we are not actually going to fill all
-            //var linkableSpis = new List<SerializedPrefabInstance>(allIDs.Length); // alloc
-            //var linkableSpiComps = new List<ISerializableLinksHandler>(allIDs.Length); // alloc
             var linkableSobs = new List<SerializedObject>(allIDs.Length); // alloc
-            var linkableSobComps = new List<ISerializableLinksHandler>(allIDs.Length); // alloc
+            var linkableSobComps = new List<ISerializableLink>(allIDs.Length); // alloc
             idBySpawnedMap = new Dictionary<ISerializablePrefabInstance, int>(allIDs.Length); // alloc
 
             for (int i = 0; i < allIDs.Length; i++)
@@ -154,10 +154,8 @@ namespace Nothke.Serialization
 
                 if (sobComp != null)
                 {
-                    if (spiComp != null)
+                    if (spiComp != null) // is prefab instance
                     {
-                        //Debug.Log("Found " + all[i].name);
-
                         SerializedPrefabInstance spiob = new SerializedPrefabInstance
                         {
                             id = allIDs[i].id,
@@ -167,23 +165,18 @@ namespace Nothke.Serialization
                             data = sobComp.SerializedData
                         };
 
-                        game.siobs.Add(spiob);
+                        game.spiobs.Add(spiob);
                         idBySpawnedMap.Add(spiComp, spiob.id);
-                        //Debug.Log("Added " + sob.data.prefabName + " id: " + sob.id);
 
-                        /*
-                        if (spiComp is ISerializableLinksHandler obCompLink)
-                        {
-                            linkableSpis.Add(spiob);
-                            linkableSpiComps.Add(obCompLink);
-                        }*/
+                        //Debug.Log("Added " + sob.data.prefabName + " id: " + sob.id);
                     }
-                    else
+                    else // is not prefab instance
                     {
                         game.sobs.Add(sob);
                     }
 
-                    if (sobComp is ISerializableLinksHandler obCompLink)
+                    // is linkable
+                    if (sobComp is ISerializableLink obCompLink)
                     {
                         linkableSobs.Add(sob);
                         linkableSobComps.Add(obCompLink);
@@ -200,7 +193,7 @@ namespace Nothke.Serialization
             {
                 var sob = linkableSobs[i];
                 var obCompLink = linkableSobComps[i];
-                obCompLink.OnSerializeLinks(ref sob.data);
+                obCompLink.OnSerializeLinks(ref sob.data); // Discarded?
             }
 
             // Serialize and save to file
@@ -230,7 +223,7 @@ namespace Nothke.Serialization
             Profiler.EndSample();
 
             // Save a list of links
-            List<ISerializableLinksHandler> links = new List<ISerializableLinksHandler>();
+            List<ISerializableLink> links = new List<ISerializableLink>();
             //spawned = new List<ISerializablePrefabInstance>();
             spawnedByIdMap = new Dictionary<int, ISerializablePrefabInstance>();
             List<ISerializableData> linksDatas = new List<ISerializableData>();
@@ -244,7 +237,7 @@ namespace Nothke.Serialization
             }
 
             // First pass, instantiate items
-            foreach (var obData in game.siobs)
+            foreach (var obData in game.spiobs)
             {
                 string prefabName = obData.prefab;
 
@@ -272,7 +265,7 @@ namespace Nothke.Serialization
                 //spawned.Add(obComp);
                 spawnedByIdMap.Add(idComp.id, spiComp);
 
-                if (spiComp is ISerializableLinksHandler obCompLink)
+                if (spiComp is ISerializableLink obCompLink)
                 {
                     links.Add(obCompLink);
                     linksDatas.Add(obData.data);
@@ -291,7 +284,7 @@ namespace Nothke.Serialization
                 var scomp = idSceneObjectMap[obData.id];
                 scomp.SerializedData = obData.data;
 
-                if (scomp is ISerializableLinksHandler obCompLink)
+                if (scomp is ISerializableLink obCompLink)
                 {
                     links.Add(obCompLink);
                     linksDatas.Add(obData.data);

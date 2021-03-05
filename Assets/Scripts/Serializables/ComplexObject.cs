@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 using Nothke.Serialization;
 
-public class ComplexObject : MonoBehaviour, ISerializable, ISerializablePrefabInstance, ISerializableLinksHandler
+public class ComplexObject : MonoBehaviour, ISerializable, ISerializablePrefabInstance, ISerializableLink
 {
     public float value = 1;
     public SimpleObject child;
@@ -39,6 +39,8 @@ public class ComplexObject : MonoBehaviour, ISerializable, ISerializablePrefabIn
     public void OnSerializeLinks(ref ISerializableData data)
     {
         var d = data as Data;
+
+        d.value = 666;
 
         if (child)
             d.childId = Serializer.e.GetIdOf(child);
