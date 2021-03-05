@@ -90,14 +90,24 @@ namespace Nothke.Serialization
         public void ValidateScene()
         {
             var ids = FindObjectsOfType<ID>(); // alloc
+            HashSet<int> idset = new HashSet<int>();
 
             foreach (var id in ids)
             {
-                if (id.gameObject.GetComponent<ISerializable>() == null &&
-                    id.gameObject.GetComponent<ISerializablePrefabInstance>() == null)
+                if (id.gameObject.GetComponent<ISerializable>() == null)
                 {
-                    Debug.LogError("Validator: Serializable interface not found on object with ID", id);
+                    Debug.LogError("Validator: ISerializable interface not found on object with ID", id);
+
+                    if (id.gameObject.GetComponent<ISerializablePrefabInstance>() != null)
+                    {
+                        Debug.LogError("Validator: An object implements ISerializablePrefabInstance but not ISerializable. You must implement ISerializable", id);
+                    }
                 }
+
+                if (idset.Contains(id.id))
+                    Debug.LogError("Validator: There is already an object with this id in the scene", id);
+
+                idset.Add(id.id);
             }
         }
 
