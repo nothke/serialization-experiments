@@ -13,7 +13,7 @@ namespace Nothke.Serialization
             id = Random.Range(int.MinValue, int.MaxValue);
         }
 
-//#if UNITY_EDITOR
+#if UNITY_EDITOR
         [SerializeField]
         int prevInstanceID = 0;
 
@@ -28,6 +28,7 @@ namespace Nothke.Serialization
             if (Application.isPlaying)
                 return;
 
+            // DUplication detection
             if (prevInstanceID == 0)
             {
                 prevInstanceID = GetInstanceID();
@@ -35,11 +36,11 @@ namespace Nothke.Serialization
 
             if (prevInstanceID != GetInstanceID() && GetInstanceID() < 0)
             {
-                Debug.Log("Detected Duplicate!");
+                Debug.Log("Duplicated and object with ID");
                 prevInstanceID = GetInstanceID();
                 SetNew();
             }
         }
-//#endif
+#endif
     }
 }
