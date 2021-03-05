@@ -4,7 +4,7 @@ using UnityEngine;
 
 using Nothke.Serialization;
 
-public class ItemWithArray : MonoBehaviour, ISerializablePrefabInstance
+public class ItemWithArray : MonoBehaviour, ISerializable, ISerializablePrefabInstance
 {
     public string PrefabName => "item_with_array";
 

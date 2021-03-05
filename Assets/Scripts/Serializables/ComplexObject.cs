@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 using Nothke.Serialization;
 
-public class ComplexObject : MonoBehaviour, ISerializablePrefabInstance, ISerializableLinksHandler
+public class ComplexObject : MonoBehaviour, ISerializable, ISerializablePrefabInstance, ISerializableLinksHandler
 {
     public float value = 1;
     public SimpleObject child;
@@ -39,15 +39,21 @@ public class ComplexObject : MonoBehaviour, ISerializablePrefabInstance, ISerial
     public void OnSerializeLinks(ref ISerializableData data)
     {
         var d = data as Data;
-        d.childId = Serializer.e.GetIdOf(child);
+
+        if (child)
+            d.childId = Serializer.e.GetIdOf(child);
     }
 
     public void OnDeserializeLinks(in ISerializableData data)
     {
         var d = data as Data;
-        //Debug.Log("Deserializing link: " + d.childId);
-        var sobComp = Serializer.e.GetSpawnedFromId(d.childId);
-        Transform t = (sobComp as MonoBehaviour).transform;
-        t.parent = transform;
+
+        if (d.childId != -1)
+        {
+            //Debug.Log("Deserializing link: " + d.childId);
+            var sobComp = Serializer.e.GetSpawnedFromId(d.childId);
+            Transform t = (sobComp as MonoBehaviour).transform;
+            t.parent = transform;
+        }
     }
 }

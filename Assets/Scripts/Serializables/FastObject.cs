@@ -4,7 +4,7 @@ using UnityEngine;
 
 using Nothke.Serialization;
 
-public class FastObject : MonoBehaviour, ISerializablePrefabInstance
+public class FastObject : MonoBehaviour, ISerializable, ISerializablePrefabInstance
 {
     public string PrefabName => "fast";
 

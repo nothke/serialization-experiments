@@ -8,6 +8,9 @@ namespace Nothke.Serialization.Testing
 {
     public class TestSerializer : MonoBehaviour
     {
+        [Header("Press S to serialize, D to deserialize")]
+        public bool _;
+
         [ContextMenu("Save")]
         public void Save()
         {
