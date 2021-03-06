@@ -50,15 +50,9 @@ namespace Nothke.Serialization
             }
         }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        public static void SceneLoaded()
+        public void OverrideInstanceID()
         {
-            Debug.LogWarning("Called!");
-            var ids = FindObjectsOfType<ID>();
-            foreach (var id in ids)
-            {
-                id.prevInstanceID = id.GetInstanceID();
-            }
+            prevInstanceID = GetInstanceID(); // Make work in editor
         }
 #endif
     }

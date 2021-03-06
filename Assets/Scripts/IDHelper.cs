@@ -4,6 +4,7 @@ using UnityEngine;
 
 using UnityEditor;
 using UnityEngine.SceneManagement;
+using Nothke.Serialization;
 
 [InitializeOnLoad]
 public static class IDHelper
@@ -28,6 +29,16 @@ public static class IDHelper
             name = activeSceneName;
             OnChange?.Invoke(name);
             Debug.Log("Invoked!");
+            SetIDsBeforeAwake();
+        }
+    }
+
+    public static void SetIDsBeforeAwake()
+    {
+        var ids = Object.FindObjectsOfType<ID>();
+        foreach (var id in ids)
+        {
+            id.OverrideInstanceID();
         }
     }
 }
