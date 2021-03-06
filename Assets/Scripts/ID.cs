@@ -30,7 +30,7 @@ namespace Nothke.Serialization
                 SetNewEditor();
         }
 
-        void Awake()
+        void Start()
         {
             if (Application.isPlaying)
                 return;
