@@ -17,10 +17,17 @@ namespace Nothke.Serialization
         [SerializeField]
         int prevInstanceID = 0;
 
+        public void SetNewEditor()
+        {
+            var so = new UnityEditor.SerializedObject(this);
+            so.FindProperty("id").intValue = Random.Range(int.MinValue, int.MaxValue);
+            so.ApplyModifiedProperties();
+        }
+
         private void OnValidate()
         {
             if (id == 0)
-                SetNew();
+                SetNewEditor();
         }
 
         void Awake()
@@ -31,6 +38,7 @@ namespace Nothke.Serialization
             // DUplication detection
             if (prevInstanceID == 0)
             {
+                Debug.Log("Getting new InstanceID");
                 prevInstanceID = GetInstanceID();
             }
 
@@ -38,7 +46,18 @@ namespace Nothke.Serialization
             {
                 Debug.Log("Duplicated and object with ID");
                 prevInstanceID = GetInstanceID();
-                SetNew();
+                SetNewEditor();
+            }
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        public static void SceneLoaded()
+        {
+            Debug.LogWarning("Called!");
+            var ids = FindObjectsOfType<ID>();
+            foreach (var id in ids)
+            {
+                id.prevInstanceID = id.GetInstanceID();
             }
         }
 #endif
